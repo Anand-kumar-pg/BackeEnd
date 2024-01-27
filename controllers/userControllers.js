@@ -1,26 +1,14 @@
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../utils/jwtToken");
+const userModel = require("../models/userModel");
 
-const users = [
-    {
-        _id:1,
-        fullName: "test1",
-        email: "test1@gmail.com",
-        password: "$2b$10$8yhdkeP46C2CAgFVlLTnfuTe.DmW67SWFThgiCngb7lPwO6fn.kN6"
-    },
-    {
-        _id:2,
-        fullName: "test2",
-        email: "test2@gmail.com",
-        password: "$2b$10$HIgMo3dwvDS7VIEhtBVSQeCkFLNFRQ2ygpSh8BSwPY.Oi1r52ZWIS"
-    }
-]
 
 exports.login = async (req, res) => {
     const { email, password } = req.body
 
     try {
-        const user = users.find((u) => u.email === email)
+        const user =await userModel.findOne({email})
+
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -47,16 +35,15 @@ exports.login = async (req, res) => {
     }
 };
 
-
 exports.register = async (req, res) => {
     const { fullName, email, password } = req.body
     try {
         const hashesdPassword = await bcrypt.hash(password, 10)
-        const user = {
+        const user = await userModel.create({
             fullName,
             email,
-            password: hashesdPassword
-        }
+            password:hashesdPassword
+        })
         res.status(200).json({
             success: true,
             message: "User Registered",
@@ -73,7 +60,10 @@ exports.register = async (req, res) => {
 
 }
 
-exports.getUsers = (req,res) => {
+exports.getUsers = async(req,res) => {
+
+    const users = await userModel.find()
+
     res.status(200).json({
         success: true,
         users,
